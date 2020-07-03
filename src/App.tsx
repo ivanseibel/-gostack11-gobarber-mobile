@@ -4,9 +4,11 @@ import { View, Text } from 'react-native';
 // import { Container } from './styles';
 
 const src: React.FC = () => {
-  return <View>
-    <Text>Hello World</Text>
-  </View>
-}
+  return (
+    <View>
+      <Text>Hello World</Text>
+    </View>
+  );
+};
 
 export default src;
