@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   Image,
   KeyboardAvoidingView,
   View,
-  Keyboard,
   Platform,
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
+import { useNavigation } from '@react-navigation/native';
 
 import logoImg from '../../assets/logo.png';
 import Input from '../../components/Input';
@@ -16,18 +16,7 @@ import Button from '../../components/Button';
 import * as SC from './styles';
 
 const SignIn: React.FC = () => {
-  const [keyboarOpen, setKeyBoardOpen] = useState(false);
-
-  useEffect(() => {
-    Keyboard.addListener('keyboardDidShow', () => setKeyBoardOpen(true));
-    Keyboard.addListener('keyboardDidHide', () => setKeyBoardOpen(false));
-
-    return () => {
-      Keyboard.removeListener('keyboardDidShow', () => setKeyBoardOpen(true));
-      Keyboard.removeListener('keyboardDidHide', () => setKeyBoardOpen(false));
-    };
-  }, []);
-
+  const navigation = useNavigation();
   return (
     <>
       <KeyboardAvoidingView
@@ -65,14 +54,16 @@ const SignIn: React.FC = () => {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {!keyboarOpen && (
-        <SC.CreateAccountButton onPress={() => {}}>
-          <Icon name="log-in" size={20} color="#ff9000" />
-          <SC.CreateAccountButtonText>
-            Create new account
-          </SC.CreateAccountButtonText>
-        </SC.CreateAccountButton>
-      )}
+      <SC.CreateAccountButton
+        onPress={() => {
+          navigation.navigate('SignUp');
+        }}
+      >
+        <Icon name="log-in" size={20} color="#ff9000" />
+        <SC.CreateAccountButtonText>
+          Create new account
+        </SC.CreateAccountButtonText>
+      </SC.CreateAccountButton>
     </>
   );
 };
