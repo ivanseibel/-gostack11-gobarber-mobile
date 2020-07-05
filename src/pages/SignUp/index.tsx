@@ -14,6 +14,7 @@ import { Form } from '@unform/mobile';
 import { FormHandles } from '@unform/core';
 import * as Yup from 'yup';
 import getValidationErrors from '../../utils/getValidationErrors';
+import api from '../../services/api';
 
 import logoImg from '../../assets/logo.png';
 import Input from '../../components/Input';
@@ -35,43 +36,44 @@ const SignUp: React.FC = () => {
 
   const navigation = useNavigation();
 
-  const handleSignUp = useCallback(async (data: SignUpFormData): Promise<
-    void
-  > => {
-    formRef.current?.setErrors({});
-    try {
-      const schema = Yup.object().shape({
-        name: Yup.string().required('Name is required'),
-        email: Yup.string()
-          .required('Email is required')
-          .email('Must be a valid email'),
-        password: Yup.string().min(6, 'Min 6 characters'),
-      });
-      await schema.validate(data, {
-        abortEarly: false,
-      });
+  const handleSignUp = useCallback(
+    async (data: SignUpFormData): Promise<void> => {
+      formRef.current?.setErrors({});
+      try {
+        const schema = Yup.object().shape({
+          name: Yup.string().required('Name is required'),
+          email: Yup.string()
+            .required('Email is required')
+            .email('Must be a valid email'),
+          password: Yup.string().min(6, 'Min 6 characters'),
+        });
+        await schema.validate(data, {
+          abortEarly: false,
+        });
 
-      // await api.post('users', {
-      //   name: data.name,
-      //   email: data.email,
-      //   password: data.password,
-      // });
+        await api.post('users', {
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        });
 
-      // history.push('/');
+        navigation.goBack();
 
-      Alert.alert(
-        'Well done',
-        'You are registered on GoBarber and ready to logon.',
-      );
-    } catch (err) {
-      if (err instanceof Yup.ValidationError) {
-        const errors = getValidationErrors(err);
-        formRef.current?.setErrors(errors);
+        Alert.alert(
+          'Well done',
+          'You are registered on GoBarber and ready to logon.',
+        );
+      } catch (err) {
+        if (err instanceof Yup.ValidationError) {
+          const errors = getValidationErrors(err);
+          formRef.current?.setErrors(errors);
+        }
+
+        Alert.alert('Oh-oh', 'Please, verify your data and try again.');
       }
-
-      Alert.alert('Oh-oh', 'Please, verify your data and try again.');
-    }
-  }, []);
+    },
+    [navigation],
+  );
 
   return (
     <>
