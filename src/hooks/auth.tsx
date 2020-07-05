@@ -19,6 +19,7 @@ interface AuthState {
 }
 interface AuthContextData {
   user: unknown;
+  loading: boolean;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
 }
@@ -26,6 +27,7 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 const AuthProvider: React.FC = ({ children }) => {
+  const [loading, setLoading] = useState(false);
   const [data, setData] = useState<AuthState>({} as AuthState);
 
   const signOut = useCallback(async () => {
@@ -65,11 +67,15 @@ const AuthProvider: React.FC = ({ children }) => {
       setData({} as AuthState);
     }
 
+    setLoading(true);
+
     getStorage();
+
+    setLoading(false);
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user: data.user, signIn, signOut }}>
+    <AuthContext.Provider value={{ user: data.user, loading, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );
