@@ -34,7 +34,7 @@ interface AuthContextData {
 const AuthContext = createContext<AuthContextData>({} as AuthContextData);
 
 const AuthProvider: React.FC = ({ children }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [data, setData] = useState<AuthState>({} as AuthState);
 
   const signOut = useCallback(async () => {
@@ -72,19 +72,15 @@ const AuthProvider: React.FC = ({ children }) => {
       ]);
 
       if (token[1] && user[1]) {
-        setData({ token: token[1], user: JSON.parse(user[1]) });
         api.defaults.headers.authorization = `Bearer ${token[1]}`;
-        return;
+
+        setData({ token: token[1], user: JSON.parse(user[1]) });
       }
 
-      setData({} as AuthState);
+      setLoading(false);
     }
 
-    setLoading(true);
-
     getStorage();
-
-    setLoading(false);
   }, []);
 
   return (

@@ -1,5 +1,6 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Feather';
 import { useAuth } from '../../hooks/auth';
 
 import * as SC from './styles';
@@ -21,19 +22,19 @@ const Dashboard: React.FC = () => {
   const navigateToProfile = useCallback(() => {
     signOut();
     // navigate('Profile');
-  }, [navigate]);
+  }, [signOut]);
+
+  const navigateToCreateAppointment = useCallback(
+    (providerId: string) => {
+      navigate('CreateAppointment', { providerId });
+    },
+    [navigate],
+  );
 
   useEffect(() => {
-    try {
-      console.log(api.defaults.headers.authorization);
-
-      api.get('providers').then(response => {
-        console.log(response.data);
-        setProviders(response.data);
-      });
-    } catch (err) {
-      console.log(err.message);
-    }
+    api.get('providers').then(response => {
+      setProviders(response.data);
+    });
   }, []);
 
   return (
@@ -51,8 +52,32 @@ const Dashboard: React.FC = () => {
 
       <SC.ProvidersList
         data={providers}
+        ListHeaderComponent={
+          <SC.ProvidersListTitle>Barbers</SC.ProvidersListTitle>
+        }
         keyExtractor={provider => provider.id}
-        renderItem={({ item }) => <SC.UserName>{item.name}</SC.UserName>}
+        renderItem={({ item: provider }) => (
+          <SC.ProviderContainer
+            onPress={() => {
+              navigateToCreateAppointment(provider.id);
+            }}
+          >
+            <SC.ProviderAvatar source={{ uri: provider.avatar_url }} />
+
+            <SC.ProviderInfo>
+              <SC.ProviderName>{provider.name}</SC.ProviderName>
+              <SC.ProviderMeta>
+                <Icon name="calendar" size={14} color="#ff9000" />
+                <SC.ProviderMetaText>Monday to Friday</SC.ProviderMetaText>
+              </SC.ProviderMeta>
+
+              <SC.ProviderMeta>
+                <Icon name="clock" size={14} color="#ff9000" />
+                <SC.ProviderMetaText>8am to 6pm</SC.ProviderMetaText>
+              </SC.ProviderMeta>
+            </SC.ProviderInfo>
+          </SC.ProviderContainer>
+        )}
       />
     </SC.Container>
   );
