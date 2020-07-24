@@ -13,12 +13,19 @@ interface SignInCredentials {
   password: string;
 }
 
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar_url: string;
+}
+
 interface AuthState {
   token: string;
-  user: unknown;
+  user: User;
 }
 interface AuthContextData {
-  user: unknown;
+  user: User;
   loading: boolean;
   signIn(credentials: SignInCredentials): Promise<void>;
   signOut(): void;
@@ -44,6 +51,11 @@ const AuthProvider: React.FC = ({ children }) => {
 
     const { token, user } = response.data;
 
+    user.avatar_url =
+      user.avatar_url || `https://api.adorable.io/avatars/60/${user.name}.png`;
+
+    api.defaults.headers.authorization = `Bearer ${token}`;
+
     await AsyncStorage.multiSet([
       ['@GoBarber:token', token],
       ['@GoBarber:user', JSON.stringify(user)],
@@ -61,6 +73,7 @@ const AuthProvider: React.FC = ({ children }) => {
 
       if (token[1] && user[1]) {
         setData({ token: token[1], user: JSON.parse(user[1]) });
+        api.defaults.headers.authorization = `Bearer ${token[1]}`;
         return;
       }
 
