@@ -12,7 +12,6 @@ interface IRouteParams {
 
 const AppointmentCreated: React.FC = () => {
   const { reset } = useNavigation();
-  const { user } = useAuth();
   const { params } = useRoute();
 
   const routeParams = params as IRouteParams;
@@ -27,8 +26,6 @@ const AppointmentCreated: React.FC = () => {
   const formattedDate = useMemo(() => {
     return format(routeParams.date, "EEEE', ' MMMM' 'd', 'yyyy' at 'h aa'.'");
   }, []);
-
-  // Tuesday, March 14, 2020, at 12 pm.
 
   return (
     <SC.Container>
