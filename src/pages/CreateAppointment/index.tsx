@@ -1,7 +1,11 @@
 import React, { useCallback, useState, useEffect } from 'react';
 import Icon from 'react-native-vector-icons/Feather';
+import DateTimePicker, {
+  AndroidEvent,
+} from '@react-native-community/datetimepicker';
 
 import { useRoute, useNavigation } from '@react-navigation/native';
+import { Platform } from 'react-native';
 import * as SC from './styles';
 import { useAuth } from '../../hooks/auth';
 import api from '../../services/api';
@@ -26,6 +30,8 @@ const CreateAppointment: React.FC = () => {
   const [selectedProvider, setSelectedProvider] = useState(
     routeParams.providerId,
   );
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   const navigateBack = useCallback(() => {
     navigation.goBack();
@@ -40,6 +46,23 @@ const CreateAppointment: React.FC = () => {
   const handleSelectProvider = useCallback(providerId => {
     setSelectedProvider(providerId);
   }, []);
+
+  const toggleCalendar = useCallback(() => {
+    setShowCalendar(state => !state);
+  }, []);
+
+  const handleDateChanged = useCallback(
+    (e: AndroidEvent, date: Date | undefined) => {
+      if (Platform.OS === 'android') {
+        setShowCalendar(false);
+      }
+
+      if (date) {
+        setSelectedDate(date);
+      }
+    },
+    [],
+  );
 
   return (
     <SC.Container>
@@ -74,6 +97,26 @@ const CreateAppointment: React.FC = () => {
           )}
         />
       </SC.ProvidersListContainer>
+
+      <SC.CalendarContainer>
+        <SC.CalendarTitle>Choose a date</SC.CalendarTitle>
+
+        <SC.OpenCalendarButton>
+          <SC.OpenCalendarButtonText onPress={toggleCalendar}>
+            Open Calendar
+          </SC.OpenCalendarButtonText>
+        </SC.OpenCalendarButton>
+
+        {showCalendar && (
+          <DateTimePicker
+            mode="date"
+            display="calendar"
+            value={selectedDate}
+            textColor="#f4ede8"
+            onChange={handleDateChanged}
+          />
+        )}
+      </SC.CalendarContainer>
     </SC.Container>
   );
 };
