@@ -1,7 +1,7 @@
 import styled, { css } from 'styled-components/native';
-import { Platform } from 'react-native';
 import { getStatusBarHeight } from 'react-native-iphone-x-helper';
 import { FlatList, RectButton } from 'react-native-gesture-handler';
+
 import { IProvider } from '.';
 
 interface IProviderContainerProps {
@@ -24,10 +24,7 @@ export const Header = styled.View`
   justify-content: space-between;
   align-items: center;
 
-  ${Platform.OS === 'ios' &&
-  css`
-    padding-top: ${getStatusBarHeight()}px;
-  `}
+  padding-top: ${getStatusBarHeight() + 24}px;
 `;
 
 export const BackButton = styled.TouchableOpacity`
@@ -76,4 +73,28 @@ export const ProviderName = styled.Text<IProviderName>`
   font-family: 'RobotoSlab-Medium';
   font-size: 16px;
   color: ${props => (props.selected ? '#232129' : '#f4ede8')};
+`;
+
+export const CalendarContainer = styled.View``;
+
+export const CalendarTitle = styled.Text`
+  font-family: 'RobotoSlab-Medium';
+  color: #f4ede8;
+  font-size: 24px;
+  margin: 0 24px 24px;
+`;
+
+export const OpenCalendarButton = styled(RectButton)`
+  height: 46px;
+  background-color: #ff9000;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 24px;
+`;
+
+export const OpenCalendarButtonText = styled.Text`
+  font-family: 'RobotoSlab-Medium';
+  font-size: 16px;
+  color: #232129;
 `;
