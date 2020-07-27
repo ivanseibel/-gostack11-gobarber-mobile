@@ -12,6 +12,15 @@ interface IProviderName {
   selected: boolean;
 }
 
+interface IHourProps {
+  available: boolean;
+  selected: boolean;
+}
+
+interface IHourTextProps {
+  selected: boolean;
+}
+
 export const Container = styled.View`
   flex: 1;
 `;
@@ -26,6 +35,10 @@ export const Header = styled.View`
 
   padding-top: ${getStatusBarHeight() + 24}px;
 `;
+
+export const Content = styled.ScrollView.attrs({
+  showsVerticalScrollIndicator: false,
+})``;
 
 export const BackButton = styled.TouchableOpacity`
   /*  */
@@ -94,6 +107,57 @@ export const OpenCalendarButton = styled(RectButton)`
 `;
 
 export const OpenCalendarButtonText = styled.Text`
+  font-family: 'RobotoSlab-Medium';
+  font-size: 16px;
+  color: #232129;
+`;
+
+export const Schedule = styled.View`
+  padding: 24px 0 16px;
+`;
+
+export const Section = styled.View`
+  margin-bottom: 24px;
+`;
+
+export const SectionTitle = styled.Text`
+  font-size: 18px;
+  color: #999591;
+  font-family: 'RobotoSlab-Regular';
+  margin: 0 24px 12px;
+`;
+
+export const SectionContent = styled.ScrollView.attrs({
+  contentContainerStyle: { paddingHorizontal: 24 },
+  horizontal: true,
+  showsHorizontalScrollIndicator: false,
+})``;
+
+export const Hour = styled(RectButton)<IHourProps>`
+  padding: 12px;
+  background: ${props => (props.selected ? '#ff9000' : '#3e3b47')};
+  border-radius: 10px;
+  margin-right: 8px;
+
+  opacity: ${props => (props.available ? 1 : 0.3)};
+`;
+
+export const HourText = styled.Text<IHourTextProps>`
+  color: ${props => (props.selected ? '#232129' : '#f4ede8')};
+  font-family: 'RobotoSlab-Regular';
+  font-size: 16px;
+`;
+
+export const CreateAppointmentButton = styled(RectButton)`
+  height: 46px;
+  background-color: #ff9000;
+  border-radius: 10px;
+  align-items: center;
+  justify-content: center;
+  margin: 0 24px 24px;
+`;
+
+export const CreateAppointmentButtonText = styled.Text`
   font-family: 'RobotoSlab-Medium';
   font-size: 16px;
   color: #232129;

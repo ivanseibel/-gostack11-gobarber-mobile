@@ -6,7 +6,7 @@ import DateTimePicker, {
 import { format } from 'date-fns';
 
 import { useRoute, useNavigation } from '@react-navigation/native';
-import { Platform } from 'react-native';
+import { Platform, Alert } from 'react-native';
 import * as SC from './styles';
 import { useAuth } from '../../hooks/auth';
 import api from '../../services/api';
@@ -39,6 +39,7 @@ const CreateAppointment: React.FC = () => {
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [availability, setAvailability] = useState<IAvailabilityItem[]>([]);
+  const [selectedHour, setSelectedHour] = useState(0);
 
   useEffect(() => {
     api
@@ -50,7 +51,6 @@ const CreateAppointment: React.FC = () => {
         },
       })
       .then(response => {
-        console.log(response.data);
         setAvailability(response.data);
       });
   }, [selectedDate, selectedProvider]);
@@ -91,7 +91,8 @@ const CreateAppointment: React.FC = () => {
       .filter(({ hour }) => hour < 12)
       .map(({ hour, available }) => {
         return {
-          hour: format(new Date().setHours(hour), 'hh:00'),
+          hour,
+          formattedHour: format(new Date().setHours(hour), 'hh:00'),
           available,
         };
       });
@@ -102,11 +103,62 @@ const CreateAppointment: React.FC = () => {
       .filter(({ hour }) => hour >= 12)
       .map(({ hour, available }) => {
         return {
-          hour: format(new Date().setHours(hour), 'hh:00'),
+          hour,
+          formattedHour: format(new Date().setHours(hour), 'hh:00'),
           available,
         };
       });
   }, [availability]);
+
+  const handleSelectHour = useCallback((hour: number) => {
+    setSelectedHour(hour);
+  }, []);
+
+  // Avoid select date in the past
+  useEffect(() => {
+    const now = new Date();
+
+    const hourToVerify = new Date(
+      selectedDate.getFullYear(),
+      selectedDate.getMonth(),
+      selectedDate.getDate(),
+      selectedHour,
+      0,
+    );
+
+    if (hourToVerify <= now) {
+      setSelectedHour(0);
+    }
+  }, [selectedHour, selectedDate]);
+
+  const handleCreateAppointment = useCallback(() => {
+    if (selectedHour === 0) {
+      Alert.alert(
+        'Appointment schedule error',
+        'You must choose a time to your appointment.',
+      );
+      return;
+    }
+
+    const date = selectedDate;
+    date.setHours(selectedHour);
+    date.setMinutes(0);
+
+    api
+      .post('appointments', {
+        date,
+        provider_id: selectedProvider,
+      })
+      .then(() => {
+        navigation.navigate('AppointmentCreated', { date: date.getTime() });
+      })
+      .catch(() => {
+        Alert.alert(
+          'Appointment schedule error',
+          'An error has occurred during scheduled your appointment, try again later',
+        );
+      });
+  }, [navigation, selectedDate, selectedHour, selectedProvider]);
 
   return (
     <SC.Container>
@@ -120,54 +172,105 @@ const CreateAppointment: React.FC = () => {
         <SC.UserAvatar source={{ uri: user.avatar_url }} />
       </SC.Header>
 
-      <SC.ProvidersListContainer>
-        <SC.ProvidersList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={providers}
-          keyExtractor={provider => provider.id}
-          renderItem={({ item: provider }) => (
-            <SC.ProviderContainer
-              onPress={() => {
-                handleSelectProvider(provider.id);
-              }}
-              selected={provider.id === selectedProvider}
-            >
-              <SC.ProviderAvatar source={{ uri: provider.avatar_url }} />
-              <SC.ProviderName selected={provider.id === selectedProvider}>
-                {provider.name}
-              </SC.ProviderName>
-            </SC.ProviderContainer>
-          )}
-        />
-      </SC.ProvidersListContainer>
-
-      <SC.CalendarContainer>
-        <SC.CalendarTitle>Choose a date</SC.CalendarTitle>
-
-        <SC.OpenCalendarButton>
-          <SC.OpenCalendarButtonText onPress={toggleCalendar}>
-            Open Calendar
-          </SC.OpenCalendarButtonText>
-        </SC.OpenCalendarButton>
-
-        {showCalendar && (
-          <DateTimePicker
-            mode="date"
-            display="calendar"
-            value={selectedDate}
-            textColor="#f4ede8"
-            onChange={handleDateChanged}
+      <SC.Content>
+        <SC.ProvidersListContainer>
+          <SC.ProvidersList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={providers}
+            keyExtractor={provider => provider.id}
+            renderItem={({ item: provider }) => (
+              <SC.ProviderContainer
+                onPress={() => {
+                  handleSelectProvider(provider.id);
+                }}
+                selected={provider.id === selectedProvider}
+              >
+                <SC.ProviderAvatar source={{ uri: provider.avatar_url }} />
+                <SC.ProviderName selected={provider.id === selectedProvider}>
+                  {provider.name}
+                </SC.ProviderName>
+              </SC.ProviderContainer>
+            )}
           />
-        )}
-      </SC.CalendarContainer>
+        </SC.ProvidersListContainer>
 
-      {morningAvailability.map(({ hour, available }) => (
-        <SC.CalendarTitle>{hour}</SC.CalendarTitle>
-      ))}
-      {afternoonAvailability.map(({ hour, available }) => (
-        <SC.CalendarTitle>{hour}</SC.CalendarTitle>
-      ))}
+        <SC.CalendarContainer>
+          <SC.CalendarTitle>Choose a date</SC.CalendarTitle>
+
+          <SC.OpenCalendarButton>
+            <SC.OpenCalendarButtonText onPress={toggleCalendar}>
+              Open Calendar
+            </SC.OpenCalendarButtonText>
+          </SC.OpenCalendarButton>
+
+          {showCalendar && (
+            <DateTimePicker
+              mode="date"
+              display="calendar"
+              value={selectedDate}
+              textColor="#f4ede8"
+              onChange={handleDateChanged}
+            />
+          )}
+        </SC.CalendarContainer>
+
+        <SC.Schedule>
+          <SC.CalendarTitle>Choose best time for you</SC.CalendarTitle>
+
+          <SC.Section>
+            <SC.SectionTitle>Morning</SC.SectionTitle>
+
+            <SC.SectionContent>
+              {morningAvailability.map(({ formattedHour, hour, available }) => (
+                <SC.Hour
+                  enabled={available}
+                  selected={hour === selectedHour}
+                  key={formattedHour}
+                  available={available}
+                  onPress={() => {
+                    handleSelectHour(hour);
+                  }}
+                >
+                  <SC.HourText selected={hour === selectedHour}>
+                    {formattedHour}
+                  </SC.HourText>
+                </SC.Hour>
+              ))}
+            </SC.SectionContent>
+          </SC.Section>
+
+          <SC.Section>
+            <SC.SectionTitle>Afternoon</SC.SectionTitle>
+
+            <SC.SectionContent>
+              {afternoonAvailability.map(
+                ({ formattedHour, hour, available }) => (
+                  <SC.Hour
+                    enabled={available}
+                    selected={hour === selectedHour}
+                    key={formattedHour}
+                    available={available}
+                    onPress={() => {
+                      handleSelectHour(hour);
+                    }}
+                  >
+                    <SC.HourText selected={hour === selectedHour}>
+                      {formattedHour}
+                    </SC.HourText>
+                  </SC.Hour>
+                ),
+              )}
+            </SC.SectionContent>
+          </SC.Section>
+        </SC.Schedule>
+
+        <SC.CreateAppointmentButton onPress={handleCreateAppointment}>
+          <SC.CreateAppointmentButtonText>
+            Schedule
+          </SC.CreateAppointmentButtonText>
+        </SC.CreateAppointmentButton>
+      </SC.Content>
     </SC.Container>
   );
 };
