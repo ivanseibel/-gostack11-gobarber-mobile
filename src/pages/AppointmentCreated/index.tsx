@@ -1,13 +1,21 @@
-import React, { useCallback } from 'react';
-import { Button } from 'react-native';
+import React, { useCallback, useMemo } from 'react';
 import Icon from 'react-native-vector-icons/Feather';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { format } from 'date-fns';
 import { useAuth } from '../../hooks/auth';
 
 import * as SC from './styles';
 
+interface IRouteParams {
+  date: number;
+}
+
 const AppointmentCreated: React.FC = () => {
   const { reset } = useNavigation();
+  const { user } = useAuth();
+  const { params } = useRoute();
+
+  const routeParams = params as IRouteParams;
 
   const handleOkPressed = useCallback(() => {
     reset({
@@ -16,14 +24,18 @@ const AppointmentCreated: React.FC = () => {
     });
   }, [reset]);
 
+  const formattedDate = useMemo(() => {
+    return format(routeParams.date, "EEEE', ' MMMM' 'd', 'yyyy' at 'h aa'.'");
+  }, []);
+
+  // Tuesday, March 14, 2020, at 12 pm.
+
   return (
     <SC.Container>
       <Icon name="check" size={80} color="#04d361" />
 
-      <SC.Title>Appointment scheduled</SC.Title>
-      <SC.Description>
-        Tuesday, March 14, 2020, at 12 pm, with Ivan Seibel.
-      </SC.Description>
+      <SC.Title>Appointment scheduled to</SC.Title>
+      <SC.Description>{formattedDate}</SC.Description>
 
       <SC.OkButton onPress={handleOkPressed}>
         <SC.OkButtonText>Ok</SC.OkButtonText>
