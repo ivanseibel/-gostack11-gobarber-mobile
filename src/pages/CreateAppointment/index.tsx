@@ -1,8 +1,9 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState, useEffect, useMemo } from 'react';
 import Icon from 'react-native-vector-icons/Feather';
 import DateTimePicker, {
   AndroidEvent,
 } from '@react-native-community/datetimepicker';
+import { format } from 'date-fns';
 
 import { useRoute, useNavigation } from '@react-navigation/native';
 import { Platform } from 'react-native';
@@ -37,7 +38,7 @@ const CreateAppointment: React.FC = () => {
   );
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [availability, setAvailability] = useState<AvailabilityItem[]>([]);
+  const [availability, setAvailability] = useState<IAvailabilityItem[]>([]);
 
   useEffect(() => {
     api
@@ -49,6 +50,7 @@ const CreateAppointment: React.FC = () => {
         },
       })
       .then(response => {
+        console.log(response.data);
         setAvailability(response.data);
       });
   }, [selectedDate, selectedProvider]);
@@ -83,6 +85,28 @@ const CreateAppointment: React.FC = () => {
     },
     [],
   );
+
+  const morningAvailability = useMemo(() => {
+    return availability
+      .filter(({ hour }) => hour < 12)
+      .map(({ hour, available }) => {
+        return {
+          hour: format(new Date().setHours(hour), 'hh:00'),
+          available,
+        };
+      });
+  }, [availability]);
+
+  const afternoonAvailability = useMemo(() => {
+    return availability
+      .filter(({ hour }) => hour >= 12)
+      .map(({ hour, available }) => {
+        return {
+          hour: format(new Date().setHours(hour), 'hh:00'),
+          available,
+        };
+      });
+  }, [availability]);
 
   return (
     <SC.Container>
@@ -137,6 +161,13 @@ const CreateAppointment: React.FC = () => {
           />
         )}
       </SC.CalendarContainer>
+
+      {morningAvailability.map(({ hour, available }) => (
+        <SC.CalendarTitle>{hour}</SC.CalendarTitle>
+      ))}
+      {afternoonAvailability.map(({ hour, available }) => (
+        <SC.CalendarTitle>{hour}</SC.CalendarTitle>
+      ))}
     </SC.Container>
   );
 };
