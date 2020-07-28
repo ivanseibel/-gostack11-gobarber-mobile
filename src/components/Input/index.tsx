@@ -5,8 +5,10 @@ import React, {
   forwardRef,
   useState,
   useCallback,
+  RefObject,
 } from 'react';
-import { TextInputProperties } from 'react-native';
+import { TextInputProperties, TextInput } from 'react-native';
+
 import { useField } from '@unform/core';
 
 import * as SC from './styles';
@@ -14,6 +16,7 @@ import * as SC from './styles';
 interface TextInputProps extends TextInputProperties {
   name: string;
   icon: string;
+  containerStyle?: Record<string, unknown>;
 }
 
 interface InputValueReference {
@@ -24,21 +27,21 @@ interface InputRef {
   focus(): void;
 }
 
-const Input: React.RefForwardingComponent<inputRef, TextInputProps> = (
-  { name, icon, ...rest },
+const Input: React.RefForwardingComponent<InputRef, TextInputProps> = (
+  { name, icon, containerStyle = {}, ...rest },
   ref,
 ) => {
   const [isFocused, setIsFocused] = useState(false);
   const [isFilled, setIsFilled] = useState(false);
 
-  const inputElementRef = useRef<any>(null);
+  const inputElementRef = useRef(null) as RefObject<TextInput>;
 
   const { registerField, defaultValue = '', fieldName, error } = useField(name);
   const inputValueRef = useRef<InputValueReference>({ value: defaultValue });
 
   useImperativeHandle(ref, () => ({
     focus() {
-      inputElementRef.current.focus();
+      inputElementRef.current?.focus();
     },
   }));
 
@@ -57,19 +60,19 @@ const Input: React.RefForwardingComponent<inputRef, TextInputProps> = (
       name: fieldName,
       ref: inputValueRef.current,
       path: 'value',
-      setValue(ref: any, value) {
+      setValue(_, value) {
         inputValueRef.current.value = value;
-        inputElementRef.current.setNativeProps({ text: value });
+        inputElementRef.current?.setNativeProps({ text: value });
       },
       clearValue() {
         inputValueRef.current.value = '';
-        inputElementRef.current.clear();
+        inputElementRef.current?.clear();
       },
     });
-  }, [fieldName, registerField]);
+  }, [fieldName, inputElementRef, registerField]);
 
   return (
-    <SC.Container focused={isFocused} hasError={!!error}>
+    <SC.Container focused={isFocused} hasError={!!error} style={containerStyle}>
       <SC.Icon
         name={icon}
         size={20}
