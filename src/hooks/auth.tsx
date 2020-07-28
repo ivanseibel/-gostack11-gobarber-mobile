@@ -50,7 +50,6 @@ const AuthProvider: React.FC = ({ children }) => {
         token: data.token,
         user,
       });
-
       await AsyncStorage.setItem('@GoBarber:user', JSON.stringify(user));
     },
     [data.token],

@@ -117,6 +117,41 @@ const SignUp: React.FC = () => {
     });
   }, [user]);
 
+  const handleUpdateAvatar = useCallback(() => {
+    ImagePicker.showImagePicker({ title: 'Select Avatar' }, response => {
+      if (response.didCancel) {
+        return;
+      }
+
+      if (response.error) {
+        Alert.alert(
+          'Oh-oh... there is something wrong',
+          `Error: ${response.error}`,
+        );
+      }
+      const data = new FormData();
+
+      data.append('avatar', {
+        type: 'image/jpeg',
+        name: `${user.id}.jpg`,
+        uri: response.uri,
+      });
+
+      api
+        .patch('/users/avatar', data)
+        .then(res => {
+          updateUser(res.data);
+          Alert.alert('Avatar update', 'Your avatar was updated');
+        })
+        .catch(() => {
+          Alert.alert(
+            'Oh-oh... there is something wrong',
+            'Please, select an image or take a photo and try again',
+          );
+        });
+    });
+  }, [updateUser, user.id]);
+
   return (
     <>
       <KeyboardAvoidingView
@@ -134,7 +169,7 @@ const SignUp: React.FC = () => {
             </SC.BackButton>
 
             <View style={{ alignSelf: 'center' }}>
-              <SC.UserAvatarButton onPress={() => {}}>
+              <SC.UserAvatarButton onPress={handleUpdateAvatar}>
                 <SC.UserAvatar source={{ uri: user.avatar_url }} />
               </SC.UserAvatarButton>
             </View>
