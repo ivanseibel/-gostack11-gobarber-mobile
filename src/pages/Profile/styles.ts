@@ -18,7 +18,7 @@ export const BackButton = styled.TouchableOpacity`
 `;
 
 export const UserAvatarButton = styled.TouchableOpacity`
-  /* margin-top: 32px; */
+  align-self: flex-start;
 `;
 
 export const UserAvatar = styled.Image`

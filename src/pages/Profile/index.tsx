@@ -97,9 +97,11 @@ const SignUp: React.FC = () => {
               <Icon name="chevron-left" size={24} color="#999591" />
             </SC.BackButton>
 
-            <SC.UserAvatarButton onPress={() => {}}>
-              <SC.UserAvatar source={{ uri: user.avatar_url }} />
-            </SC.UserAvatarButton>
+            <View style={{ alignSelf: 'center' }}>
+              <SC.UserAvatarButton onPress={() => {}}>
+                <SC.UserAvatar source={{ uri: user.avatar_url }} />
+              </SC.UserAvatarButton>
+            </View>
 
             <View>
               <SC.Title>Profile</SC.Title>
